@@ -1,0 +1,73 @@
+# Github Actions Workflow to deploy a Python Lambda CDK stack
+# Version 2021-09-01
+
+name: Auto Deploy
+on: 
+ push:
+    branches:
+      - production
+
+# Don't allow concurrent deploys on a branch
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Set Env Vars
+        run: |
+          if test ${{ github.ref }} = 'refs/heads/production'; then
+            echo "STACK_NAME=production-microservice" >> $GITHUB_ENV
+            echo "AWS_ROLE=arn:aws:iam::12345:role/OrganizationAccountAccessRole" >> $GITHUB_ENV
+          else
+            echo "Unknown branch"
+            exit 1
+          fi
+      - name: Assume AWS Role
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.GH_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.GH_AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-west-2
+          role-to-assume: ${{ env.AWS_ROLE }}
+          role-duration-seconds: 3600 
+          role-skip-session-tagging: true  # don't have permission to do this
+
+      - name: Install Node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '16'
+
+      - name: NPM Dependencies - Check Cache
+        id: npm_dependencies
+        uses: actions/cache@v2
+        with:
+            # Restoring an identical node_modules dir is the fastest method
+            path: ./node_modules
+            key: node-16-modules-${{ hashFiles('package-lock.json') }}
+
+      - name: NPM Dependencies - Install (Cacheable)
+        if: steps.npm_dependencies.outputs.cache-hit != 'true'
+        run: npm ci
+
+      - name: Python Dependencies - Check Cache
+        id: python_cache
+        uses: actions/cache@v2
+        with:
+            path: ./python.zip
+            key: python-zip-${{ hashFiles('lambda/layer/requirements.txt') }}
+
+      - name: Python Dependencies - Build Zip (Cacheable)
+        if: steps.python_cache.outputs.cache-hit != 'true'
+        run: ./build-python-zip.sh
+
+      - name: Check Files
+        run: ls -l
+
+      - name: CDK Deploy
+        run: npm run cdk -- deploy $STACK_NAME --require-approval never
