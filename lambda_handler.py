@@ -6,26 +6,29 @@ import main
 
 def lambda_handler(event, context):
     body = ""
-    pathHeader = "/battlesneks_dev"
     try:
-        if event['path'] == f"{pathHeader}/" and event['httpMethod'] == "GET":
+        if event['path'] == "/" and event['httpMethod'] == "GET":
             body = json.dumps(main.info())
 
         elif event['httpMethod'] == 'POST':
-            if event['path'] == f"{pathHeader}/start":
+            if event['path'] == "/start":
                 game_state = event['body']
                 main.start(json.loads(game_state))
                 body = "ok"
-            elif event['path'] == f"{pathHeader}/move":
+            elif event['path'] == "/move":
                 game_state = event['body']
                 body = json.dumps(main.move(json.loads(game_state)))
-            elif event['path'] == f"{pathHeader}/end":
+            elif event['path'] == "/end":
                 game_state = event['body']
                 main.end(json.loads(game_state))
                 body = "ok"
         else:
             raise Exception("Unknown Command")
 
+        body += json.dumps({
+            "game_state": event['body'],
+            "path": event['path']
+        })
         return {
             "statusCode": 200,
             "headers": {
@@ -41,7 +44,9 @@ def lambda_handler(event, context):
                 "Content-Type": "application/json"
             },
             'body': json.dumps({
-                "Path": event['path'],
-                "HTTPMethod": event['httpMethod']
+                "Region ": json_region,
+                "Path": event["path"]
             })
         }
+
+
