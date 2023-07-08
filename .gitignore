@@ -1,3 +1,7 @@
 *.DS_Store
 *.pyc
 __pycache__/
+.idea/starter-snake-python.iml
+.idea/misc.xml
+.idea/misc.xml
+.idea/starter-snake-python.iml
