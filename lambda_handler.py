@@ -1,42 +1,47 @@
 import json
 import os
-
+import traceback
 import main
 
 
 def lambda_handler(event, context):
-    body = ""
+    body = {}
     try:
+        # If GET and path is /
         if event['path'] == "/" and event['httpMethod'] == "GET":
-            body = json.dumps(main.info())
+            body.update(main.info())
 
+        # if POST
         elif event['httpMethod'] == 'POST':
+            # if /start
             if event['path'] == "/start":
-                game_state = event['body']
-                main.start(json.loads(game_state))
-                body = "ok"
+                game_state = json.loads(event['body'])
+                main.start(game_state)
+
+            # if move
             elif event['path'] == "/move":
-                game_state = event['body']
-                body = json.dumps(main.move(json.loads(game_state)))
+                game_state = json.loads(event['body'])
+                body = main.move(game_state)
+
+            # if end
             elif event['path'] == "/end":
-                game_state = event['body']
-                main.end(json.loads(game_state))
-                body = "ok"
+                game_state = json.loads(event['body'])
+                main.end(game_state)
+
+        # if command not recognized
         else:
             raise Exception("Unknown Command")
 
-        body += json.dumps({
-            "game_state": event['body'],
-            "path": event['path']
-        })
         return {
             "statusCode": 200,
             "headers": {
                 "Content-Type": "application/json"
             },
-            "body": body
+            "body": json.dumps(body)
         }
-    except:
+
+    # if unknown command
+    except Exception as e:
         json_region = os.environ['AWS_REGION']
         return {
             "statusCode": 404,
@@ -44,9 +49,10 @@ def lambda_handler(event, context):
                 "Content-Type": "application/json"
             },
             'body': json.dumps({
-                "Region ": json_region,
-                "Path": event["path"]
+                "error": str(e),
+                "errorTraceback": traceback.format_exc(),
+                "Region": json_region,
+                "Path": event.get('path', 'unknown'),
+                "event": event,
             })
         }
-
-
