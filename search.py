@@ -13,17 +13,18 @@ class aSearch:
             board.append(tempRow)
         self.tempBoard = board
 
-    # TODO: Danger must be all the danger points in coordinates(Aka. Other snakes bodies), shjo
+    # Add obstacles into the board and convert it to a grid
     def obstacles(self, danger):
         for pos in danger:
             # print(pos)
             self.tempBoard[int(10 - pos['y'])][int(pos['x'])] = 0
-        self.board = Grid(matrix=self.tempBoard)
+        self.board = Grid(matrix=self.tempBoard) # Grid for the A* algorithm to find the nearest pellet
         # print(self.board.grid_str())
 
+    # starFinder will use A* to find the closest path to the provided pellet and instruct the snake what path to take
     def starFinder(self, headX, headY, pelletX, pelletY):
-        start = self.board.node(headX, headY)
-        end = self.board.node(pelletX, pelletY)
+        start = self.board.node(headX, headY) # Where snake head is
+        end = self.board.node(pelletX, pelletY) # Where end of the snake is
 
         finder = AStarFinder()
         path, runs = finder.find_path(start, end, self.board)
@@ -33,7 +34,6 @@ class aSearch:
             current = path[0]
             next = path[1]
 
-            # TODO If pellet cannot be found, return 'Fail'
 
             print(self.board.grid_str(path=path, start=start, end=end))
             # Go right
@@ -52,10 +52,9 @@ class aSearch:
                 return 'up'
 
         else:
-            # TODO Make snake go around border if no path can be found
+            return 'NO DIRECTION'
 
-            return 'down'
-
+    # cleanup will clear the grid of obstacles for the next move
     def cleanup(self, danger):
         for pos in danger:
             # print(pos)

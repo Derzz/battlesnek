@@ -77,19 +77,24 @@ def move(game_state: typing.Dict) -> typing.Dict:
     dx = my_head["x"]
     dy = my_head["y"] - 1
 
-    move_list_1 = calc_move(game_state, x, y, px, py, board_width, board_height, fed)
-    if (is_single_move(move_list_1)):
-        next_move = move_list_1
-    elif (len(move_list_1) > 0):
-        next_move = random.choice(move_list_1)
-    else:
-        next_move = end_it(game_state)
+    # move_list_1 = calc_move(game_state, x, y, px, py, board_width, board_height, fed)
+    # if (is_single_move(move_list_1)):
+    #     next_move = move_list_1
+    # elif (len(move_list_1) > 0):
+    #     next_move = random.choice(move_list_1)
+    # else:
+    #     next_move = end_it(game_state)
 
     #TODO Implement A* algorithm
+    #TODO Implement aggressiveness as needed(Aka our strategy)
+
+    # danger is a list containing all positions that are dangerous to our current snake which incluedes the bodies of other snakes and our body
     danger = []
     danger.clear()
 
-    #TODO Make heads dangerous based on health
+    #TODO Implement what to do with other snake heads
+
+    # These two loops will determine what is dangerous to the snake and will be provided to A* to not go near them
     for snake in game_state['board']['snakes'][1:]:
         for body in snake['body']:
             print(f"Rival snake body and head {body}")
@@ -105,24 +110,40 @@ def move(game_state: typing.Dict) -> typing.Dict:
     global searchObj
     searchObj.obstacles(danger)
     shortestDist, shortestX, shortestY = 9999, 0, 0
-    # TODO Check for field if there's no food
     y = 10 - y
 
+    # This will provide the closest pellet to the snake based on their manhattan distances
+    # If no pellet can be found, border_wrap() will be called
     pelletList = game_state['board']['food']
+    while pelletList:
 
-    #TODO Search each pellet
-    for pellet in game_state['board']['food']:
-        xPellet, yPellet = pellet['x'], 10 - pellet['y']
-        manDist = abs(x - xPellet) + abs(y - yPellet)
-        if manDist < shortestDist: shortestDist, shortestX, shortestY = manDist, xPellet, yPellet
+        # TODO If pellet would result in the snake trapping itself, do not attempt to go for it
 
-
-    next_move = searchObj.starFinder(x, y, shortestX, shortestY)
-    searchObj.cleanup(danger)
-    print(f"MOVE {game_state['turn']}: {next_move}")
-    return {"move": next_move}
+        for pellet in pelletList:
+            xPellet, yPellet = pellet['x'], 10 - pellet['y']
+            manDist = abs(x - xPellet) + abs(y - yPellet)
+            if manDist < shortestDist: shortestDist, shortestX, shortestY = manDist, xPellet, yPellet
 
 
+        tempNext_move = searchObj.starFinder(x, y, shortestX, shortestY)
+
+        if tempNext_move == 'NO DIRECTION':
+            pelletList.remove(pellet)
+        else:
+            searchObj.cleanup(danger)
+            print(f"MOVE {game_state['turn']}: {tempNext_move}")
+            return {"move": tempNext_move}
+
+
+    return border_wrap(game_state, is_move_safe)
+
+# TODO Under Works
+# border_wrap will attempt to wrap around the border for the snake until a safe pellet can be found in future moves
+def border_wrap(game_state: typing.Dict, is_move_safe: dict):
+    # TODO Make Snake wrap around border until pellet can be found
+    # First take possible moves from next_move and determine valid directions
+    print("No available pellet can be found! Wrapping around!")
+    return {"move:" 'down'}
 
 def check_move(game_state: typing.Dict, x, y, px, py, board_width, board_height, fed):
     my_head = game_state["you"]["body"][0]  # Coordinates of your head
