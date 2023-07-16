@@ -5,14 +5,13 @@
 #  |    |   \ / __ \|  |  |  | |  |_\  ___/ \___ \|   |  \/ __ \|    <\  ___/
 #  |________/(______/__|  |__| |____/\_____>______>___|__(______/__|__\\_____>
 #
-# This file can be a nice home for your Battlesnake logic and helper functions.
-#
-# To get you started we've included code to prevent your Battlesnake from moving backwards.
-# For more info see docs.battlesnake.com
+
+# This snake will focus on using the A* algorithm to find the nearest pellet to it.
 
 import random
 import typing
-
+import search
+from search import aSearch
 
 # info is called when you create your Battlesnake on play.battlesnake.com
 # and controls your Battlesnake's appearance
@@ -22,15 +21,23 @@ def info() -> typing.Dict:
 
     return {
         "apiversion": "1",
-        "author": "pixelsnek",  # TODO: Your Battlesnake Username
-        "color": "#947706",  # TODO: Choose color
-        "head": "fang",  # TODO: Choose head
-        "tail": "horse",  # TODO: Choose tail
+        "author": "pixelsnek",
+        "color": "#947706",
+        "head": "fang",
+        "tail": "horse",
     }
+
 
 
 # start is called when your Battlesnake begins a game
 def start(game_state: typing.Dict):
+    xBoard, yBoard = game_state["board"]["height"], game_state["board"]["width"]
+    global searchObj
+    searchObj = aSearch(xBoard, yBoard)
+
+
+
+    print("SUCCESSFULLY IMPLEMENTED GRAPH AND NODES")
     print("GAME START")
 
 
@@ -44,17 +51,11 @@ def end(game_state: typing.Dict):
 # See https://docs.battlesnake.com/api/example-move for available data
 def move(game_state: typing.Dict) -> typing.Dict:
     is_move_safe = {"up": True, "down": True, "left": True, "right": True}
+    print(f"Turn {game_state['turn']}")
 
-    # We've included code to prevent your Battlesnake from moving backwards
     my_head = game_state["you"]["body"][0]  # Coordinates of your head
     my_neck = game_state["you"]["body"][1]  # Coordinates of your "neck"
     my_tail = game_state["you"]["body"][-1]  # Coordinates of your tail
-
-    # TODO: Step 1 - Prevent your Battlesnake from moving out of bounds
-    # Combined with
-    # TODO: Step 2 - Prevent your Battlesnake from colliding with itself
-    # Combined with
-    # TODO: Step 3 - Prevent your Battlesnake from colliding with other Battlesnakes
 
     board_width = game_state['board']['width']
     board_height = game_state['board']['height']
@@ -75,6 +76,87 @@ def move(game_state: typing.Dict) -> typing.Dict:
     dx = my_head["x"]
     dy = my_head["y"] - 1
 
+
+    #TODO Implement A* algorithm
+    #TODO Implement aggressiveness as needed(Aka our strategy)
+
+    # danger is a list containing all positions that are dangerous to our current snake which incluedes the bodies of other snakes and our body
+    danger = []
+    danger.clear()
+
+    #TODO Implement what to do with other snake heads
+
+    # These two loops will determine what is dangerous to the snake and will be provided to A* to not go near them
+    # Right now, these will consider snake heads as a hazard and not go for it
+    for snake in game_state['board']['snakes'][1:]:
+        for body in snake['body']:
+            print(f"Rival snake body and head {body}")
+            danger.append(body)
+
+    myBody = game_state['you']['body']
+    #print(myBody)
+    for body in myBody[1:]:
+        # print(f"My snake body {body}")
+        danger.append(body)
+
+
+    global searchObj
+    searchObj.obstacles(danger)
+    shortestDist, shortestX, shortestY = 9999, 0, 0
+    y = 10 - y
+
+    # This will provide the closest pellet to the snake based on their manhattan distances
+    # If no pellet can be found, border_wrap() will be called
+    pelletList = game_state['board']['food']
+    while pelletList:
+
+        # TODO If pellet would result in the snake trapping itself, do not attempt to go for it
+        # TODO Might want to weigh each pellet differently based on which pellet will not lead the snake to kill itself
+        for pellet in pelletList:
+            xPellet, yPellet = pellet['x'], 10 - pellet['y']
+            manDist = abs(x - xPellet) + abs(y - yPellet)
+            if manDist < shortestDist: shortestDist, shortestX, shortestY = manDist, xPellet, yPellet
+
+
+        tempNext_move = searchObj.starFinder(x, y, shortestX, shortestY)
+
+        if tempNext_move == 'NO DIRECTION':
+            pelletList.remove(pellet)
+        else:
+            searchObj.cleanup(danger)
+            print(f"MOVE {game_state['turn']}: {tempNext_move}")
+            return {"move": tempNext_move}
+
+
+    return border_wrap(game_state, is_move_safe)
+
+# border_wrap will attempt to wrap around the border for the snake until a safe pellet can be found in future moves
+def border_wrap(game_state: typing.Dict, is_move_safe: dict):
+    # First take possible moves from next_move and determine valid directions
+    print("No available pellet can be found! Wrapping around!")
+
+    my_head = game_state["you"]["body"][0]  # Coordinates of your head
+    my_neck = game_state["you"]["body"][1]  # Coordinates of your "neck"
+    my_tail = game_state["you"]["body"][-1]  # Coordinates of your tail
+
+    board_width = game_state['board']['width']
+    board_height = game_state['board']['height']
+
+    fed = 0
+
+    x = my_head["x"]
+    y = my_head["y"]
+    px = my_neck["x"]
+    py = my_neck["y"]
+
+    rx = my_head["x"] + 1
+    ry = my_head["y"]
+    lx = my_head["x"] - 1
+    ly = my_head["y"]
+    ux = my_head["x"]
+    uy = my_head["y"] + 1
+    dx = my_head["x"]
+    dy = my_head["y"] - 1
     move_list_1 = calc_move(game_state, x, y, px, py, board_width, board_height, fed)
     if (is_single_move(move_list_1)):
         next_move = move_list_1
@@ -82,95 +164,7 @@ def move(game_state: typing.Dict) -> typing.Dict:
         next_move = random.choice(move_list_1)
     else:
         next_move = end_it(game_state)
-
-    # Food hunting
-    food = game_state['board']['food']
-    for pellet in food:
-        if is_move_safe['right'] and [rx, ry] == [pellet['x'], pellet['y']]:
-            next_move = "right"
-            fed = 1
-            break
-        elif is_move_safe['left'] and [lx, ly] == [pellet['x'], pellet['y']]:
-            next_move = "left"
-            fed = 1
-            break
-        elif is_move_safe['up'] and [ux, uy] == [pellet['x'], pellet['y']]:
-            next_move = "up"
-            fed = 1
-            break
-        elif is_move_safe['down'] and [dx, dy] == [pellet['x'], pellet['y']]:
-            next_move = "down"
-            fed = 1
-            break
-        else:
-            fed = 0
-
-    # Tail chasing
-    if game_state["you"]["health"] > 25 and game_state["you"]["length"] >= 5:
-        if is_move_safe['right'] and [rx, ry] == [my_tail['x'], my_tail['y']]:
-            next_move = "right"
-        if is_move_safe['left'] and [lx, ly] == [my_tail['x'], my_tail['y']]:
-            next_move = "left"
-        if is_move_safe['up'] and [ux, uy] == [my_tail['x'], my_tail['y']]:
-            next_move = "up"
-        if is_move_safe['down'] and [dx, dy] == [my_tail['x'], my_tail['y']]:
-            next_move = "down"
-
-    # move_list_2 = []
-    # if is_single_move (move_list_1):
-    #     print ("Case 1")
-    #     next_move = move_list_1
-    #     if move_list_1 == "right" and not foresight(game_state, rx, ry, x, y, board_width, board_height):
-    #         # He's screwed.
-    #             print(f"MOVE {game_state['turn']}: Oh no. ")
-    #     elif move_list_1 == "left" and not foresight(game_state, lx, ly, x, y, board_width, board_height):
-    #         # He's screwed.
-    #             print(f"MOVE {game_state['turn']}: Oh no. ")
-    #     elif move_list_1 == "up" and not foresight(game_state, ux, uy, x, y, board_width, board_height):
-    #         # He's screwed.
-    #             print(f"MOVE {game_state['turn']}: Oh no. ")
-    #     elif move_list_1 == "down" and not foresight(game_state, dx, dy, x, y, board_width, board_height):
-    #         # He's screwed.
-    #             print(f"MOVE {game_state['turn']}: Oh no. ")
-    # elif len (move_list_1) > 0:
-    #     print ("Case 2")
-    #     for move in move_list_1:
-    #         if move == "right" and not foresight(game_state, rx, ry, x, y, board_width, board_height):
-    #             print ("2.1")
-    #             is_move_safe ["right"] = False
-    #         elif move == "left" and not foresight(game_state, lx, ly, x, y, board_width, board_height):
-    #             print ("2.2")
-    #             is_move_safe ["left"] = False
-    #         elif move == "up" and not foresight(game_state, ux, uy, x, y, board_width, board_height):
-    #             print ("2.3")
-    #             is_move_safe ["up"] = False
-    #         elif move == "down" and not foresight(game_state, dx, dy, x, y, board_width, board_height):
-    #             print ("2.4")
-    #             is_move_safe ["down"] = False
-    #     for move, isSafe in is_move_safe.items():
-    #         if isSafe:
-    #             move_list_2.append(move)
-    #     if is_single_move (move_list_2):
-    #         next_move = move_list_2
-    #     elif (len(move_list_2) > 0):
-    #         next_move = random.choice (move_list_2)
-    #     else:
-    #         # He's screwed.
-    #         print(f"MOVE {game_state['turn']}: Oh no. ")
-    #         next_move = random.choice (move_list_1)
-    # else:
-    #     print ("Case 3")
-    #     print(f"MOVE {game_state['turn']}: I will go out on my own terms!")
-    #     next_move = end_it (game_state)
-
-    # TODO: Step 3A - Don't ram into heads where opponent.snake.len > ours
-
-    # TODO: Step 4 - Move towards food instead of random, to regain health and survive longer
-    # food = game_state['board']['food']
-
-    print(f"MOVE {game_state['turn']}: {next_move}")
     return {"move": next_move}
-
 
 def check_move(game_state: typing.Dict, x, y, px, py, board_width, board_height, fed):
     my_head = game_state["you"]["body"][0]  # Coordinates of your head
@@ -252,13 +246,6 @@ def calc_move(game_state: typing.Dict, x, y, px, py, board_width, board_height, 
             return safe_moves
         else:
             return end_it(game_state)
-
-
-def foresight(game_state: typing.Dict, x, y, px, py, board_width, board_height, fed):
-    battlesnakes = game_state['board']['snakes']
-    for snake in battlesnakes:
-        for bodyCoord in snake['body'][:(fed - 1)]:
-            return len(calc_move(game_state, x, y, px, py, board_width, board_height, fed)) > 0
 
 
 def is_single_move(var):
