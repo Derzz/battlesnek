@@ -66,7 +66,7 @@ Note: PID number is the number after "LISTENING"
 ### Simulate a game with:
 ```cmd
 $ battlesnake play -W 11 -H 11 --name 'Python Starter Project' --url http://localhost:8000 -g solo --browser
-$ battlesnake play -W 11 -H 11 --name 'Snek' --url http://localhost:8000 --name 'Cheater' --url http://localhost:8001 -g classic --browser
+$ battlesnake play -W 11 -H 11 --name 'Snek' --url http://localhost:8000 --name 'Dummy' --url http://localhost:8001 -g classic --browser
 ```
 (Same for Windows)
 
