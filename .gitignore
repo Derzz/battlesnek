@@ -3,3 +3,5 @@
 __pycache__/
 .idea/*
 battlesnake.exe
+test.json
+test.py
