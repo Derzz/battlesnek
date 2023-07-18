@@ -1,2 +1,2 @@
 Flask==2.3.2
-pathfinding
+pathfinding==1.0.1
