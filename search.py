@@ -30,7 +30,7 @@ class aSearch:
         path, runs = finder.find_path(start, end, self.board)
         # print(path)
 
-        if len(path) != 0:
+        if len(path) >= 2:
             current = path[0]
             next = path[1]
 

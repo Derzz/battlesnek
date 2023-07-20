@@ -45,50 +45,39 @@ def end(game_state: typing.Dict):
 # Valid moves are "up", "down", "left", or "right"
 # See https://docs.battlesnake.com/api/example-move for available data
 def move(game_state: typing.Dict) -> typing.Dict:
+    if game_state['you']['length'] < 5:
+        return food(game_state)
+    # Else do flood fill strat
+    else:
+        print("snake at 5 or more, doing strat")
+        return {"move": "down"}
+
+def food(game_state: typing.Dict) -> typing.Dict:
     is_move_safe = {"up": True, "down": True, "left": True, "right": True}
     print(f"Turn {game_state['turn']}")
 
+    # Note: A* will only be searching for 9 x 9 area, it will treat the edges as
     xBoard, yBoard = game_state["board"]["height"], game_state["board"]["width"]
     searchObj = aSearch(xBoard, yBoard)
     my_head = game_state["you"]["body"][0]  # Coordinates of your head
     my_neck = game_state["you"]["body"][1]  # Coordinates of your "neck"
-    my_tail = game_state["you"]["body"][-1]  # Coordinates of your tail
-
-    board_width = game_state['board']['width']
-    board_height = game_state['board']['height']
-
-    fed = 0
 
     x = my_head["x"]
     y = my_head["y"]
-    px = my_neck["x"]
-    py = my_neck["y"]
 
-    rx = my_head["x"] + 1
-    ry = my_head["y"]
-    lx = my_head["x"] - 1
-    ly = my_head["y"]
-    ux = my_head["x"]
-    uy = my_head["y"] + 1
-    dx = my_head["x"]
-    dy = my_head["y"] - 1
-
-    # TODO Implement A* algorithm
-    # TODO Implement aggressiveness as needed(Aka our strategy)
 
     # danger is a list containing all positions that are dangerous to our current snake which incluedes the bodies of other snakes and our body
     danger = []
     danger.clear()
 
-    # TODO Implement what to do with other snake heads
 
     # These two loops will determine what is dangerous to the snake and will be provided to A* to not go near them
-    # Right now, these will consider snake heads as a hazard and not go for it
     for snake in game_state['board']['snakes'][1:]:
         for body in snake['body']:
             print(f"Rival snake body and head {body}")
             danger.append(body)
-
+        if snake['length'] < game_state['you']['length']:
+            danger.remove(snake['head'])
     myBody = game_state['you']['body']
     # print(myBody)
     for body in myBody[1:]:
@@ -100,16 +89,19 @@ def move(game_state: typing.Dict) -> typing.Dict:
     y = 10 - y
 
     # This will provide the closest pellet to the snake based on their manhattan distances
-    # If no pellet can be found, border_wrap() will be called
+    # If no pellet can be found, border_wrap() will be called and the snake will determine a safe move to go in
     pelletList = game_state['board']['food']
     while pelletList:
 
-        # TODO If pellet would result in the snake trapping itself, do not attempt to go for it
-        # TODO Might want to weigh each pellet differently based on which pellet will not lead the snake to kill itself
         for pellet in pelletList:
+            # If turn is greater than 3, snake will not consider border pellets anymore, as it's too risky since the full snake is out
             xPellet, yPellet = pellet['x'], 10 - pellet['y']
-            manDist = abs(x - xPellet) + abs(y - yPellet)
-            if manDist < shortestDist: shortestDist, shortestX, shortestY = manDist, xPellet, yPellet
+            if (xPellet == 0 or yPellet == 0 or xPellet == xBoard - 1 or yPellet == yBoard - 1) and game_state['turn'] > 3:
+                print(f"removing {pellet}")
+                pelletList.remove(pellet)
+            else:
+                manDist = abs(x - xPellet) + abs(y - yPellet)
+                if manDist < shortestDist: shortestDist, shortestX, shortestY = manDist, xPellet, yPellet
 
         tempNext_move = searchObj.starFinder(x, y, shortestX, shortestY)
 
