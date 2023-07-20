@@ -10,8 +10,8 @@
 
 import random
 import typing
-import search
-from search import *
+import aStar
+from aStar import *
 
 # info is called when you create your Battlesnake on play.battlesnake.com
 # and controls your Battlesnake's appearance
@@ -44,6 +44,7 @@ def end(game_state: typing.Dict):
 # Valid moves are "up", "down", "left", or "right"
 # See https://docs.battlesnake.com/api/example-move for available data
 def move(game_state: typing.Dict) -> typing.Dict:
+    # Operate A* here
     if game_state['you']['length'] < 5:
         return priorASearch.food(game_state)
     # Else do flood fill strat
