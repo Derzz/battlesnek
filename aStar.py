@@ -77,7 +77,7 @@ class priorASearch:
         board_width = game_state['board']['width']
         board_height = game_state['board']['height']
 
-        fed = game_state['you']['health'] == 100
+        fed = 0
 
         x = my_head["x"]
         y = my_head["y"]
