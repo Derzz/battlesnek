@@ -46,11 +46,30 @@ Install the [Battlesnake CLI](https://github.com/BattlesnakeOfficial/rules/tree/
 * You can [download compiled binaries here](https://github.com/BattlesnakeOfficial/rules/releases)
 * or [install as a go package](https://github.com/BattlesnakeOfficial/rules/tree/main/cli#installation) (requires Go 1.18 or higher)
 
-Command to run a local game
-
-```sh
-battlesnake play -W 11 -H 11 --name 'Python Starter Project' --url http://localhost:8000 -g solo --browser
+### Run both scripts simultaneously with:
+```console
+$ python3 main.py & python3 cheat.py
 ```
+or run in seperate terminals on Windows
+
+### Terminate both ports with:
+```console
+$ lsof -ti:{port1} | xargs kill & lsof -ti:{port2} | xargs kill
+```
+or
+```cmd
+> netstat -ano | findstr :<port1> & netstat -ano | findstr :<port2>
+> taskkill /PID <PID1> /F & taskkill /PID <PID2> /F
+```
+Note: PID number is the number after "LISTENING"
+
+### Simulate a game with:
+```cmd
+$ battlesnake play -W 11 -H 11 --name 'Python Starter Project' --url http://localhost:8000 -g solo --browser
+$ battlesnake play -W 11 -H 11 --name 'Snek' --url http://localhost:8000 --name 'Dummy' --url http://localhost:8001 -g classic --browser
+```
+(Same for Windows)
+
 
 ## Next Steps
 
