@@ -12,6 +12,8 @@ import random
 import typing
 import aStar
 from aStar import *
+from flood_fill import *
+
 
 # info is called when you create your Battlesnake on play.battlesnake.com
 # and controls your Battlesnake's appearance
@@ -30,7 +32,6 @@ def info() -> typing.Dict:
 
 # start is called when your Battlesnake begins a game
 def start(game_state: typing.Dict):
-
     print("SUCCESSFULLY IMPLEMENTED GRAPH AND NODES")
     print("GAME START")
 
@@ -44,14 +45,85 @@ def end(game_state: typing.Dict):
 # Valid moves are "up", "down", "left", or "right"
 # See https://docs.battlesnake.com/api/example-move for available data
 def move(game_state: typing.Dict) -> typing.Dict:
-    # Operate A* here
-    if game_state['you']['length'] < 5:
-        return priorASearch.food(game_state)
-    # Else do flood fill strat
-    else:
-        print("snake at 5 or more, doing strat")
-        return {"move": "down"}
+    move_area = [
+        floodFill(getNextPosition("up", game_state), game_state, arrayify(game_state, not Beeg(game_state))),
+        floodFill(getNextPosition("down", game_state), game_state, arrayify(game_state, not Beeg(game_state))),
+        floodFill(getNextPosition("left", game_state), game_state, arrayify(game_state, not Beeg(game_state))),
+        floodFill(getNextPosition("right", game_state), game_state, arrayify(game_state, not Beeg(game_state))),
+    ]
 
+    if len(game_state["board"]["food"]) > 0:
+        print("Current position: {}".format(game_state["you"]["head"]))
+        print("Closest Food: {}".format(findFood(game_state)))
+        move = goto(move_area, findFood(game_state), game_state)
+
+    if is_stuck(move_area, game_state) and max(move_area) != 0:
+        if move_area[0] == max(move_area):
+            move = "up"
+        elif move_area[1] == max(move_area):
+            move = "down"
+        elif move_area[2] == max(move_area):
+            move = "left"
+        elif move_area[3] == max(move_area):
+            move = "right"
+
+    # Failsafe on
+    elif is_stuck(move_area, game_state) and max(move_area) == 0:
+        print("Failsafe triggered")
+
+    # Ignores projected heads
+    if max(move_area) == 0:
+        print("Head prediction off")
+        move_area = [
+            floodFill(getNextPosition("up", game_state), game_state, arrayify(game_state, False)),
+            floodFill(getNextPosition("down", game_state), game_state, arrayify(game_state, False)),
+            floodFill(getNextPosition("left", game_state), game_state, arrayify(game_state, False)),
+            floodFill(getNextPosition("right", game_state), game_state, arrayify(game_state, False)),
+        ]
+
+    if move == "":
+        goodMoves = []
+
+        if move_area[0] == max(move_area):
+            goodMoves.append("up")
+
+        if move_area[1] == max(move_area):
+            goodMoves.append("down")
+
+        if move_area[2] == max(move_area):
+            goodMoves.append("left")
+
+        if move_area[3] == max(move_area):
+            goodMoves.append("right")
+
+        if len(goodMoves) > 0:
+            move = random.choice(goodMoves)
+
+    # End it
+    if is_stuck(move_area, game_state) and max(move_area) == 0:
+        print(f"MOVE {game_state['turn']}: I will go out on my own terms!")
+
+        if game_state["you"]["body"][1]["x"] < game_state["you"]["body"][0]["x"]:  # Neck is left of head, move left
+            move = "left"
+        elif game_state["you"]["body"][1]["x"] > game_state["you"]["body"][0]["x"]:  # Neck is right of head, move right
+            move = "right"
+        elif game_state["you"]["body"][1]["y"] < game_state["you"]["body"][0]["y"]:  # Neck is below head, move down
+            move = "down"
+        elif game_state["you"]["body"][1]["y"] > game_state["you"]["body"][0]["y"]:  # Neck is above head, move up
+            move = "up"
+        else:
+            move = "down"
+
+    print(f"MOVE {game_state['turn']}: {move}")
+    return {"move": move}
+
+    # Operate A* here
+    # if game_state['you']['length'] < 5:
+    #     return priorASearch.food(game_state)
+    # # Else do flood fill strat
+    # else:
+    #     print("snake at 5 or more, doing strat")
+    #     return {"move": "down"}
 
 
 # Start server when `python main.py` is run
