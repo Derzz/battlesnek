@@ -17,13 +17,13 @@ from aStar import *
 
 def info():
     print ("INFO")
-    return ({
+    return {
         "apiversion": "1",
-        "author": "William Li",
-        "color": "#000000",
-        "head": "default",
-        "tail": "default"
-    })
+        "author": "pixelsnek",
+        "color": "#811313",
+        "head": "mask",
+        "tail": "snowflake",
+    }
 
 
 def index():
