@@ -22,7 +22,7 @@ def info():
         "author": "pixelsnek",
         "color": "#811313",
         "head": "mask",
-        "tail": "snowflake",
+        "tail": "flake",
     }
 
 
