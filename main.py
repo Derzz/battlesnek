@@ -264,7 +264,7 @@ def floodfill_move(game_state):
         print("Closest Food: {}".format(findFood(game_state)))
         next_move = goto(move_area, findFood(game_state), game_state)
 
-    if is_stuck(move_area, game_state) and max(move_area) != 0:
+    if is_stuck(move_area, game_state) and max(move_area) > 1:
         if up_area == max(move_area):
             next_move = "up"
         elif down_area == max(move_area):
@@ -274,12 +274,12 @@ def floodfill_move(game_state):
         elif right_area == max(move_area):
             next_move = "right"
 
-    # Failsafe on
-    if is_stuck(move_area, game_state) and max(move_area) == 0:
+        # Failsafe on
+    if is_stuck(move_area, game_state) and max(move_area) <= 1:
         print("Failsafe triggered")
 
-    # Ignores projected heads
-    if max(move_area) == 0:
+        # Ignores projected heads
+    if max(move_area) <= 1:
         print("Head prediction off")
         up_area = floodFill(getNextPosition("up", game_state), game_state, arrayify(game_state, False))
         down_area = floodFill(getNextPosition("down", game_state), game_state, arrayify(game_state, False))
