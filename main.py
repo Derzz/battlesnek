@@ -14,7 +14,7 @@ import random
 
 
 def info():
-    print ("INFO")
+    print("INFO")
     return {
         "apiversion": "1",
         "author": "pixelsnek",
@@ -147,22 +147,24 @@ def arrayify(data, ghost_heads: bool):
         else:
             for body_part in snake["body"][:-1]:
                 array[body_part["x"]][body_part["y"]] = 1
-    for snake in snakes:
-        if snake["id"] != data["you"]["id"] and snake["length"] >= data["you"]["length"]:
-            head_x = snake["head"]["x"]
-            head_y = snake["head"]["y"]
 
-            if is_cords_in_board(head_x - 1, head_y, height, width):
-                array[head_x - 1][head_y] = 1
+    if ghost_heads:
+        for snake in snakes:
+            if snake["id"] != data["you"]["id"] and snake["length"] >= data["you"]["length"]:
+                head_x = snake["head"]["x"]
+                head_y = snake["head"]["y"]
 
-            if is_cords_in_board(head_x + 1, head_y, height, width):
-                array[head_x + 1][head_y] = 1
+                if is_cords_in_board(head_x - 1, head_y, height, width):
+                    array[head_x - 1][head_y] = 1
 
-            if is_cords_in_board(head_x, head_y - 1, height, width):
-                array[head_x][head_y - 1] = 1
+                if is_cords_in_board(head_x + 1, head_y, height, width):
+                    array[head_x + 1][head_y] = 1
 
-            if is_cords_in_board(head_x, head_y + 1, height, width):
-                array[head_x][head_y + 1] = 1
+                if is_cords_in_board(head_x, head_y - 1, height, width):
+                    array[head_x][head_y - 1] = 1
+
+                if is_cords_in_board(head_x, head_y + 1, height, width):
+                    array[head_x][head_y + 1] = 1
     return array
 
 
