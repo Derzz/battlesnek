@@ -42,77 +42,13 @@ def move(game_state):
     The data parameter will contain information about the board.
     Your response must include your move of up, down, left, or right.
     """
-    game_state
-    next_move = ""
-    up_area = floodFill(getNextPosition("up", game_state), game_state, arrayify(game_state, not Beeg(game_state)))
-    down_area = floodFill(getNextPosition("down", game_state), game_state, arrayify(game_state, not Beeg(game_state)))
-    right_area = floodFill(getNextPosition("right", game_state), game_state, arrayify(game_state, not Beeg(game_state)))
-    left_area = floodFill(getNextPosition("left", game_state), game_state, arrayify(game_state, not Beeg(game_state)))
-    move_area = [up_area, down_area, right_area, left_area]
 
-    if len(game_state["board"]["food"]) > 0:
-        print("Current position: {}".format(game_state["you"]["head"]))
-        print("Closest Food: {}".format(findFood(game_state)))
-        next_move = goto(move_area, findFood(game_state), game_state)
-
-    if is_stuck(move_area, game_state) and max(move_area) != 0:
-        if up_area == max(move_area):
-            next_move = "up"
-        elif down_area == max(move_area):
-            next_move = "down"
-        elif left_area == max(move_area):
-            next_move = "left"
-        elif right_area == max(move_area):
-            next_move = "right"
-
-    # Failsafe on
-    if is_stuck(move_area, game_state) and max(move_area) == 0:
-        print("Failsafe triggered")
-
-    # Ignores projected heads
-    if max(move_area) == 0:
-        print("Head prediction off")
-        up_area = floodFill(getNextPosition("up", game_state), game_state, arrayify(game_state, False))
-        down_area = floodFill(getNextPosition("down", game_state), game_state, arrayify(game_state, False))
-        right_area = floodFill(getNextPosition("right", game_state), game_state, arrayify(game_state, False))
-        left_area = floodFill(getNextPosition("left", game_state), game_state, arrayify(game_state, False))
-        move_area = [up_area, down_area, right_area, left_area]
-
-    if next_move == "":
-        goodMoves = []
-
-        if up_area == max(move_area):
-            goodMoves.append("up")
-
-        if down_area == max(move_area):
-            goodMoves.append("down")
-
-        if left_area == max(move_area):
-            goodMoves.append("left")
-
-        if right_area == max(move_area):
-            goodMoves.append("right")
-
-        if len(goodMoves) > 0:
-            next_move = random.choice(goodMoves)
-
-    # End it
-    if is_stuck(move_area, game_state) and max(move_area) == 0:
-        print(f"MOVE {game_state['turn']}: I will go out on my own terms!")
-
-        if game_state["you"]["body"][1]["x"] < game_state["you"]["body"][0]["x"]:  # Neck is left of head, move left
-            next_move = "left"
-        elif game_state["you"]["body"][1]["x"] > game_state["you"]["body"][0]["x"]:  # Neck is right of head, move right
-            next_move = "right"
-        elif game_state["you"]["body"][1]["y"] < game_state["you"]["body"][0]["y"]:  # Neck is below head, move down
-            next_move = "down"
-        elif game_state["you"]["body"][1]["y"] > game_state["you"]["body"][0]["y"]:  # Neck is above head, move up
-            next_move = "up"
-        else:
-            next_move = "down"
+    next_move = floodfill_move(game_state)
+    shout = rickroll(game_state)
 
     print(f"MOVE {game_state['turn']}: {next_move}")
-    return {"move": next_move}
+    return {"move": next_move,
+            "shout": shout}
 
 
 def end(game_state):
@@ -120,6 +56,14 @@ def end(game_state):
     Called every time a game with your snake in it ends.
     """
     print("GAME OVER")
+
+
+def rickroll(game_state):
+    with open("lol.txt", 'r') as file:
+        data = file.read().replace('\n', ' ')
+        data = data.replace('  ', ' ')
+        data_list = data.split(' ')
+        return data_list[game_state['turn'] - 1]
 
 
 def is_stuck(move_area, data):
@@ -305,6 +249,77 @@ def goto(move_area, pos, data):
         return move_y
     else:
         return random.choice([move_x, move_y])
+
+
+def floodfill_move(game_state):
+    next_move = ""
+    up_area = floodFill(getNextPosition("up", game_state), game_state, arrayify(game_state, not Beeg(game_state)))
+    down_area = floodFill(getNextPosition("down", game_state), game_state, arrayify(game_state, not Beeg(game_state)))
+    right_area = floodFill(getNextPosition("right", game_state), game_state, arrayify(game_state, not Beeg(game_state)))
+    left_area = floodFill(getNextPosition("left", game_state), game_state, arrayify(game_state, not Beeg(game_state)))
+    move_area = [up_area, down_area, right_area, left_area]
+
+    if len(game_state["board"]["food"]) > 0:
+        print("Current position: {}".format(game_state["you"]["head"]))
+        print("Closest Food: {}".format(findFood(game_state)))
+        next_move = goto(move_area, findFood(game_state), game_state)
+
+    if is_stuck(move_area, game_state) and max(move_area) != 0:
+        if up_area == max(move_area):
+            next_move = "up"
+        elif down_area == max(move_area):
+            next_move = "down"
+        elif left_area == max(move_area):
+            next_move = "left"
+        elif right_area == max(move_area):
+            next_move = "right"
+
+    # Failsafe on
+    if is_stuck(move_area, game_state) and max(move_area) == 0:
+        print("Failsafe triggered")
+
+    # Ignores projected heads
+    if max(move_area) == 0:
+        print("Head prediction off")
+        up_area = floodFill(getNextPosition("up", game_state), game_state, arrayify(game_state, False))
+        down_area = floodFill(getNextPosition("down", game_state), game_state, arrayify(game_state, False))
+        right_area = floodFill(getNextPosition("right", game_state), game_state, arrayify(game_state, False))
+        left_area = floodFill(getNextPosition("left", game_state), game_state, arrayify(game_state, False))
+        move_area = [up_area, down_area, right_area, left_area]
+
+    if next_move == "":
+        goodMoves = []
+
+        if up_area == max(move_area):
+            goodMoves.append("up")
+
+        if down_area == max(move_area):
+            goodMoves.append("down")
+
+        if left_area == max(move_area):
+            goodMoves.append("left")
+
+        if right_area == max(move_area):
+            goodMoves.append("right")
+
+        if len(goodMoves) > 0:
+            next_move = random.choice(goodMoves)
+
+    # End it
+    if is_stuck(move_area, game_state) and max(move_area) == 0:
+        print(f"MOVE {game_state['turn']}: I will go out on my own terms!")
+
+        if game_state["you"]["body"][1]["x"] < game_state["you"]["body"][0]["x"]:  # Neck is left of head, move left
+            next_move = "left"
+        elif game_state["you"]["body"][1]["x"] > game_state["you"]["body"][0]["x"]:  # Neck is right of head, move right
+            next_move = "right"
+        elif game_state["you"]["body"][1]["y"] < game_state["you"]["body"][0]["y"]:  # Neck is below head, move down
+            next_move = "down"
+        elif game_state["you"]["body"][1]["y"] > game_state["you"]["body"][0]["y"]:  # Neck is above head, move up
+            next_move = "up"
+        else:
+            next_move = "down"
+    return next_move
 
 
 # Start server when `python main.py` is run
