@@ -10,7 +10,6 @@
 # For more info see docs.battlesnake.com
 
 import json
-import os
 import random
 
 
@@ -26,7 +25,7 @@ def info():
 
 
 def index():
-    return "From the ashes I rise."
+    return "I am live"
 
 
 def start(game_state):
@@ -44,7 +43,7 @@ def move(game_state):
     Your response must include your move of up, down, left, or right.
     """
     game_state
-    move = ""
+    next_move = ""
     up_area = floodFill(getNextPosition("up", game_state), game_state, arrayify(game_state, not Beeg(game_state)))
     down_area = floodFill(getNextPosition("down", game_state), game_state, arrayify(game_state, not Beeg(game_state)))
     right_area = floodFill(getNextPosition("right", game_state), game_state, arrayify(game_state, not Beeg(game_state)))
@@ -54,17 +53,17 @@ def move(game_state):
     if len(game_state["board"]["food"]) > 0:
         print("Current position: {}".format(game_state["you"]["head"]))
         print("Closest Food: {}".format(findFood(game_state)))
-        move = goto(move_area, findFood(game_state), game_state)
+        next_move = goto(move_area, findFood(game_state), game_state)
 
     if is_stuck(move_area, game_state) and max(move_area) != 0:
         if up_area == max(move_area):
-            move = "up"
+            next_move = "up"
         elif down_area == max(move_area):
-            move = "down"
+            next_move = "down"
         elif left_area == max(move_area):
-            move = "left"
+            next_move = "left"
         elif right_area == max(move_area):
-            move = "right"
+            next_move = "right"
 
     # Failsafe on
     if is_stuck(move_area, game_state) and max(move_area) == 0:
@@ -79,7 +78,7 @@ def move(game_state):
         left_area = floodFill(getNextPosition("left", game_state), game_state, arrayify(game_state, False))
         move_area = [up_area, down_area, right_area, left_area]
 
-    if move == "":
+    if next_move == "":
         goodMoves = []
 
         if up_area == max(move_area):
@@ -94,26 +93,26 @@ def move(game_state):
         if right_area == max(move_area):
             goodMoves.append("right")
 
-        if (len(goodMoves) > 0):
-            move = random.choice(goodMoves)
+        if len(goodMoves) > 0:
+            next_move = random.choice(goodMoves)
 
     # End it
     if is_stuck(move_area, game_state) and max(move_area) == 0:
         print(f"MOVE {game_state['turn']}: I will go out on my own terms!")
 
         if game_state["you"]["body"][1]["x"] < game_state["you"]["body"][0]["x"]:  # Neck is left of head, move left
-            move = "left"
+            next_move = "left"
         elif game_state["you"]["body"][1]["x"] > game_state["you"]["body"][0]["x"]:  # Neck is right of head, move right
-            move = "right"
+            next_move = "right"
         elif game_state["you"]["body"][1]["y"] < game_state["you"]["body"][0]["y"]:  # Neck is below head, move down
-            move = "down"
+            next_move = "down"
         elif game_state["you"]["body"][1]["y"] > game_state["you"]["body"][0]["y"]:  # Neck is above head, move up
-            move = "up"
+            next_move = "up"
         else:
-            move = "down"
+            next_move = "down"
 
-    print(f"MOVE {game_state['turn']}: {move}")
-    return {"move": move}
+    print(f"MOVE {game_state['turn']}: {next_move}")
+    return {"move": next_move}
 
 
 def end(game_state):
@@ -131,19 +130,19 @@ def is_stuck(move_area, data):
     return False
 
 
-def getNextPosition(move, data):
+def getNextPosition(next_move, data):
     """
     returns next position depending on which inputted
     """
     nextPos = {"x": data["you"]["head"]['x'], "y": data["you"]["head"]['y']}
 
-    if move == 'up':
+    if next_move == 'up':
         nextPos["y"] = nextPos["y"] + 1
-    elif move == 'down':
+    elif next_move == 'down':
         nextPos["y"] = nextPos["y"] - 1
-    elif move == 'right':
+    elif next_move == 'right':
         nextPos["x"] = nextPos["x"] + 1
-    elif move == 'left':
+    elif next_move == 'left':
         nextPos["x"] = nextPos["x"] - 1
     return nextPos
 
@@ -158,35 +157,35 @@ def is_cords_in_board(x, y, height, width):
     return True
 
 
-def is_occupied(x, y, dataArray):
-    game_width = len(dataArray)
-    game_height = len(dataArray[0])
+def is_occupied(x, y, data_array):
+    game_width = len(data_array)
+    game_height = len(data_array[0])
 
     if not is_cords_in_board(x, y, game_height, game_width):
         return True
-    elif dataArray[x][y] == 1:
+    elif data_array[x][y] == 1:
         return True
     return False
 
 
-def floodFill(pos, data, dataArray):
+def floodFill(pos, data, data_array):
     """
     Check the remaining space of a projected move
     Returns free space
     """
     count = 0
 
-    if is_occupied(pos["x"], pos["y"], dataArray):
+    if is_occupied(pos["x"], pos["y"], data_array):
         return count
 
     # mark node as visited
-    dataArray[pos["x"]][pos["y"]] = 1
+    data_array[pos["x"]][pos["y"]] = 1
 
     count += 1
-    count += floodFill({"x": pos["x"], "y": pos["y"] - 1}, data, dataArray)
-    count += floodFill({"x": pos["x"], "y": pos["y"] + 1}, data, dataArray)
-    count += floodFill({"x": pos["x"] - 1, "y": pos["y"]}, data, dataArray)
-    count += floodFill({"x": pos["x"] + 1, "y": pos["y"]}, data, dataArray)
+    count += floodFill({"x": pos["x"], "y": pos["y"] - 1}, data, data_array)
+    count += floodFill({"x": pos["x"], "y": pos["y"] + 1}, data, data_array)
+    count += floodFill({"x": pos["x"] - 1, "y": pos["y"]}, data, data_array)
+    count += floodFill({"x": pos["x"] + 1, "y": pos["y"]}, data, data_array)
     return count
 
 
@@ -237,7 +236,7 @@ def Beeg(data):
 
 def findFood(data):
     """
-    Locates closest food to snake
+    Locates the closest food to snake
     """
     x = data["you"]["head"]["x"]
     y = data["you"]["head"]["y"]
