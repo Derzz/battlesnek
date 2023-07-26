@@ -33,7 +33,11 @@ def start(game_state):
     Called every time a new Battlesnake game starts and snek is in it.
     Response will control how snek is displayed.
     """
-    print("GAME START")
+    snakes = game_state['board']['snakes']
+    snake_names = []
+    for snake in snakes:
+        snake_names.append(snake['name'])
+    print(f"GAME START: {' vs. '.join(snake_names)}")
 
 
 def move(game_state):
@@ -55,6 +59,10 @@ def end(game_state):
     """
     Called every time a game with your snake in it ends.
     """
+    if len(game_state['board']['snakes']) == 1:
+        print(f"Winner: {game_state['board']['snakes'][0]['name']}\n")
+    else:
+        print("Winner: None")
     print("GAME OVER")
 
 
