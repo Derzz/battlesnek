@@ -4,13 +4,14 @@
 #  |    |   \ / __ \|  |  |  | |  |_\  ___/ \___ \|   |  \/ __ \|    <\  ___/
 #  |________/(______/__|  |__| |____/\_____>______>___|__(______/__|__\\_____>
 #
-# This file can be a nice home for your Battlesnake logic and helper functions.
-#
-# To get you started we've included code to prevent your Battlesnake from moving backwards.
-# For more info see docs.battlesnake.com
+
+# This snake will focus on using the A* algorithm to find the nearest pellet to it.
 
 import json
 import random
+import typing
+import aStar
+from aStar import *
 
 
 def info():
@@ -40,7 +41,8 @@ def start(game_state):
     print(f"GAME START: {' vs. '.join(snake_names)}")
 
 
-def move(game_state):
+
+def move (game_state):
     """
     Called when the Battlesnake Engine needs to know your next move.
     The data parameter will contain information about the board.
@@ -335,5 +337,5 @@ def floodfill_move(game_state):
 # Start server when `python main.py` is run
 if __name__ == "__main__":
     from server import run_server
-
     run_server({"info": info, "start": start, "move": move, "end": end}, 8001)
+

@@ -76,3 +76,9 @@ $ battlesnake play -W 11 -H 11 --name 'Snek' --url http://localhost:8000 --name 
 Continue with the [Battlesnake Quickstart Guide](https://docs.battlesnake.com/quickstart) to customize and improve your Battlesnake's behavior.
 
 **Note:** To play games on [play.battlesnake.com](https://play.battlesnake.com) you'll need to deploy your Battlesnake to a live web server OR use a port forwarding tool like [ngrok](https://ngrok.com/) to access your server locally.
+
+
+## Battlesnake API URIs
+
+- dev: `https://s6so8t6nz3.execute-api.us-west-2.amazonaws.com/default/`
+- prod/main: `https://k424dixlt6.execute-api.us-west-2.amazonaws.com/default/battlesneks`
