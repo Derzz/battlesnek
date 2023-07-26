@@ -14,14 +14,14 @@ import random
 
 
 def info():
-    print("INFO")
-    return ({
+    print ("INFO")
+    return {
         "apiversion": "1",
-        "author": "William Li",
-        "color": "#000000",
-        "head": "default",
-        "tail": "default"
-    })
+        "author": "pixelsnek",
+        "color": "#811313",
+        "head": "mask",
+        "tail": "flake",
+    }
 
 
 def index():
